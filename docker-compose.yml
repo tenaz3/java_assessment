@@ -1,0 +1,33 @@
+version: '3.1'
+
+services:
+  api:
+    image: 'quiz-api-docker.jar:latest'
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/database
+      - SPRING_DATASOURCE_USERNAME=freestar-postgres
+      - SPRING_DATASOURCE_PASSWORD=freestar-postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+  db:
+    image: 'postgres:13.1-alpine'
+    restart: unless-stopped
+    command:
+      [ "postgres", "-c", "logging_collector=on", "-c", "log_statement=all" ]
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: freestar-postgres
+      POSTGRES_PASSWORD: freestar-postgres
+      POSTGRES_DB: database
+    container_name: freestar-db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
